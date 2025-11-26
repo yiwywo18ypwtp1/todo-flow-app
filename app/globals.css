@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap');
+
 @import "tailwindcss";
 
 :root {
@@ -8,8 +10,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* --color-pnk: #ff78a7;
+  --color-pnk-darker: #d3688d; */
+  --shadow-pnk: 0 0 7.5px #fda5d5;
+
+  --drop-shadow-wht: 0 0 3px #fff;
+  --text-shadow-wht: 0 0 10px #fff;
+
 }
 
 @media (prefers-color-scheme: dark) {
