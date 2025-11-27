@@ -4,27 +4,28 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Divider from "./Divider";
 import Image from "next/image";
+import MyTooltip from "@/components/MyTooltip";
 
 const SECTIONS = [
     {
         title: null,
         items: [
-            { icon: "home", name: "Home", slug: "home" },
+            { icon: "home", name: "Home", slug: "/" },
         ]
     },
     {
-        title: null,
+        title: "Manage",
         items: [
-            { icon: "edit", name: "New task", slug: "new-task" },
-            { icon: "tag", name: "Tags", slug: "tags" },
-            { icon: "favorite", name: "Favorites", slug: "favorite" },
+            { icon: "edit", name: "Create task", slug: "new-task" },
+            { icon: "tag", name: "My Tags", slug: "tags" },
         ]
     },
     {
-        title: null,
+        title: "FILTER",
         items: [
             { icon: "today", name: "On today", slug: "today" },
-            { icon: "done", name: "Completed", slug: "completed" },
+            { icon: "clock", name: "In progress", slug: "undone" },
+            { icon: "done", name: "Done", slug: "Done" },
         ]
     },
 
@@ -34,11 +35,11 @@ const SideNavbar = () => {
     const router = useRouter();
 
     const [expand, setExpand] = useState<boolean>(true);
-    const [selected, setSelected] = useState<string>("home")
+    const [selected, setSelected] = useState<string>("/")
 
     return (
         <nav
-            className={`bg-neutral-900 flex flex-col items-center gap-4 border-r border-white/15 p-3 transition-[width] duration-300 ease-in-out relative ${expand ? "w-[220px]" : "w-[66px]"}`}
+            className={`bg-neutral-900 shrink-0 flex flex-col items-center gap-4 border-r border-white/15 p-3 transition-[width] duration-300 ease-in-out relative ${expand ? "w-[220px]" : "w-[66px]"}`}
         >
             <div className="flex items-center w-full h-10 justify-start">
 
@@ -75,6 +76,20 @@ const SideNavbar = () => {
                         key={si}
                         className="w-full flex flex-col gap-3 "
                     >
+                        {si > 0 && (
+                            <>
+                                {expand ? (
+                                    section.title && (
+                                        <h3 className={`text-xs mt-4 uppercase tracking-wider text-white/40 px-2 ${expand ? "opacity-100" : "opacity-0 w-0 ml-0 overflow-hidden"}`}>
+                                            {section.title}
+                                        </h3>
+                                    )
+                                ) : (
+                                    <Divider />
+                                )}
+                            </>
+                        )}
+
                         {section.items.map((p, pi) => (
                             <div
                                 key={pi}
@@ -82,7 +97,7 @@ const SideNavbar = () => {
                                     setSelected(p.slug);
                                     router.push(`/${p.slug}`);
                                 }}
-                                className={`flex items-center w-full h-10 p-2 rounded-lg border cursor-pointer transition- duration-500 ${selected === p.slug ? "border-pink-300 bg-pink-300/10 shadow-pnk *:drop-shadow-none" : "border-transparent"}`}
+                                className={`flex items-center w-full h-10 p-2 hover:bg-white/5 rounded-lg border cursor-pointer transition- duration-500 ${selected === p.slug ? "border-pink-300 bg-pink-300/10 shadow-pnk *:drop-shadow-none" : "border-transparent"}`}
                             >
                                 <Image
                                     className="drop-shadow-wht"
@@ -99,10 +114,6 @@ const SideNavbar = () => {
                                 </h1>
                             </div>
                         ))}
-
-                        {si < SECTIONS.length - 1 && (
-                            <Divider />
-                        )}
                     </div>
                 ))}
             </div >

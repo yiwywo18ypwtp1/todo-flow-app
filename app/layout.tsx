@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Exo_2 } from "next/font/google";
 import "./globals.css";
 import SideNavbar from "@/components/SideNavbar";
+import { TooltipProvider } from "@/components/ui/tooltip";
+
 
 
 const exo2 = Exo_2({
@@ -25,10 +27,12 @@ export default function RootLayout({
       <body
         className={`${exo2.className} bg-blk text-wht`}
       >
-        <div className="flex flex-row w-full h-screen">
-          <SideNavbar />
-          {children}
-        </div>
+        <TooltipProvider delayDuration={1}>
+          <div className="flex flex-row w-full h-screen">
+            <SideNavbar />
+            {children}
+          </div>
+        </TooltipProvider>
       </body>
     </html>
   );
