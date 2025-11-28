@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Task } from "@/types/taskType";
 import Image from "next/image";
 import { formatDate } from "@/lib/date";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,38 +18,16 @@ import Tag from "./Tag";
 import MyTooltip from "./MyTooltip";
 
 
-interface Subtask {
-    id: string;
-    title: string;
-    done: boolean;
-}
-
-interface Tag {
-    id: string;
-    title: string;
-    color: string;
-}
-
-interface Task {
-    id: string;
-    title: string;
-    description: string;
-    dueDate: string;
-    tags: Tag[];
-    subtasks: Subtask[];
-    status: string;
-    priority: number;
-}
-
 interface TaskCardProps {
     task: Task;
     onDone: (id: string) => void;
+    onUndone: (id: string) => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
-    "in-process": "#00a6f4",
-    "on-today": "#7c86ff",
-    "done": "#00e78b",
+    "in-process": "#7c86ff",
+    "on-today": "#1fd1f1",
+    "done": "#00f78d",
 };
 
 const getPriorityColor = (p: number) => {
@@ -58,19 +37,24 @@ const getPriorityColor = (p: number) => {
     if (p >= 1) return "#aadf65";
 };
 
-export default function TaskCard({ task, onDone }: TaskCardProps) {
+export default function TaskCard({ task, onDone, onUndone }: TaskCardProps) {
     const [checked, setChecked] = useState<boolean>(false);
     const [openDesc, setOpenDesc] = useState<boolean>(false);
-    const [showControlBtns, setShowManage] = useState<boolean>(false);
+    const [showControlBtns, setControlBtns] = useState<boolean>(false);
+
+    const done = task.status === "done" ? true : false
 
     const taskColor = STATUS_COLORS[task.status] || "gray";
     const priorityColor = getPriorityColor(task.priority);
 
+
     return (
         <div
-            onMouseEnter={() => setShowManage(true)}
-            onMouseLeave={() => setShowManage(false)}
-            style={{ borderColor: taskColor + "75" }}
+            onMouseEnter={() => setControlBtns(true)}
+            onMouseLeave={() => setControlBtns(false)}
+            style={{
+                borderColor: taskColor + "85",
+            }}
             className={`flex flex-col gap-3 bg-[#111] border p-4 rounded-xl overflow-visible hover:bg-white/5 transition-all`}
         >
             <div className="flex flex-row items-start justify-between">
@@ -109,21 +93,19 @@ export default function TaskCard({ task, onDone }: TaskCardProps) {
 
                 {checked ? (
                     <Button
-                        onClick={() => onDone(task.id)}
+                        onClick={!done ? () => onDone(task.id) : () => onUndone(task.id)}
                         variant="outline"
-                        className="h-8 px-2 bg-green-300/10 border-green-300 hover:bg-green-300/20"
+                        className={`h-8 px-2 ${!done ? "bg-green-300/10 border-green-300 hover:bg-green-300/20" : " bg-red-300/10 border-red-300 hover:bg-red-300/20"}`}
                     >
-                        Mark as done
+                        {!done ? "Mark as done" : "Mark as Undone"}
                     </Button>
                 ) : (
                     <div className={`flex items-center gap-2 ${showControlBtns ? "opacity-100 saturate-100" : "opacity-50 saturate-50"} transition-all duration-300`}>
                         < Dialog >
                             <DialogTrigger asChild>
-                                <MyTooltip content="Edit task">
-                                    <Button variant="outline" className="h-8 px-2 bg-pink-300/10 border-pink-300 hover:bg-pink-300/20">
-                                        <Image src="/svg/edit.svg" alt="Edit" width={20} height={20} />
-                                    </Button>
-                                </MyTooltip>
+                                <Button variant="outline" className="h-8 px-2 bg-pink-300/10 border-pink-300 hover:bg-pink-300/20">
+                                    <Image src="/svg/edit.svg" alt="Edit" width={20} height={20} />
+                                </Button>
                             </DialogTrigger>
 
                             <DialogContent className="bg-[#111] border border-white/10 text-white">
@@ -141,16 +123,14 @@ export default function TaskCard({ task, onDone }: TaskCardProps) {
                                         defaultValue={task.description}
                                         className="px-2 py-1 bg-black/40 rounded border border-white/20"
                                     />
-                                    <Button className="bg-pink-300/20 border border-pink-300">Save</Button>
+                                    <Button className="bg-pink-300/20 border border-pink-300 hover:bg-pink-300/30">Save</Button>
                                 </div>
                             </DialogContent>
                         </Dialog>
 
-                        <MyTooltip content="Delete task">
-                            <Button variant="outline" className="h-8 px-2 bg-red-300/10 border-red-300 hover:bg-red-300/20">
-                                <Image src="/svg/trash.svg" alt="Delete" width={20} height={20} />
-                            </Button>
-                        </MyTooltip>
+                        <Button variant="outline" className="h-8 px-2 bg-red-300/10 border-red-300 hover:bg-red-300/20">
+                            <Image src="/svg/trash.svg" alt="Delete" width={20} height={20} />
+                        </Button>
                     </div>
                 )
                 }

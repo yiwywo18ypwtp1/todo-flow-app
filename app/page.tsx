@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import TaskCard from "@/components/TaskCard";
 import Divider from "@/components/Divider";
+import { sortTasks } from "@/utils/sortTask";
+import { Task } from "@/types/taskType";
+import TaskColumn from "@/components/TasksColumn";
 
-const TASKS = [
+const TASKS: Task[] = [
     {
         id: "t1",
         title: "Pay",
@@ -103,9 +105,19 @@ const TASKS = [
 ]
 
 export default function Home() {
-    const [tasks, setTasks] = useState(TASKS)
+    const [tasks, setTasks] = useState(TASKS);
 
-    function markAsDone(id: string) {
+    const [sortAll, setSortAll] = useState<string>("none");
+    const [sortToday, setSortToday] = useState<string>("none");
+    const [sortInProcess, setSortInProcess] = useState<string>("none");
+    const [sortDone, setSortDone] = useState<string>("none");
+
+    const all = sortTasks(tasks, sortAll);
+    const today = sortTasks(tasks.filter(t => t.status === "on-today"), sortToday);
+    const inProcess = sortTasks(tasks.filter(t => t.status === "in-process"), sortInProcess);
+    const done = sortTasks(tasks.filter(t => t.status === "done"), sortDone);
+
+    const markAsDone = (id: string) => {
         setTasks(prev =>
             prev.map(t =>
                 t.id === id ? { ...t, status: "done" } : t
@@ -113,95 +125,53 @@ export default function Home() {
         )
     }
 
+    const markAsUndone = (id: string) => {
+        setTasks(prev =>
+            prev.map(t =>
+                t.id === id ? { ...t, status: "in-process" } : t
+            )
+        )
+    }
+
     return (
         <div className="flex gap-6 p-6 w-full">
-            <div className="flex-1 flex flex-col gap-5">
-                <h2 className="text-lg font-medium tracking-wide">All</h2>
-
-                <div className="flex flex-col gap-3 h-full overflow-y-scroll scroll-hide">
-                    {TASKS.map((task) => (
-                        <TaskCard
-                            key={task.id}
-                            task={task}
-                            onDone={(id) => {
-                                setTasks(prev =>
-                                    prev.map(t =>
-                                        t.id === id ? { ...t, status: "done" } : t
-                                    )
-                                );
-                            }}
-                        />
-                    ))}
-                </div>
-            </div>
+            <TaskColumn
+                title="All"
+                tasks={all}
+                sort={sortAll}
+                setSort={setSortAll}
+                markAsDone={markAsDone}
+                markAsUndone={markAsUndone}
+            />
 
             <Divider vertical />
 
-            <div className="flex-1 flex flex-col gap-5">
-                <h2 className="text-lg font-medium tracking-wide">On today</h2>
+            <TaskColumn
+                title="On today"
+                tasks={today}
+                sort={sortToday}
+                setSort={setSortToday}
+                markAsDone={markAsDone}
+                markAsUndone={markAsUndone}
+            />
 
-                <div className="flex flex-col gap-3 h-full overflow-y-scroll scroll-hide">
-                    {TASKS
-                        .filter(task => task.status === "on-today")
-                        .map((task) => (
-                            <TaskCard
-                                key={task.id}
-                                task={task}
-                                onDone={(id) => {
-                                    setTasks(prev =>
-                                        prev.map(t =>
-                                            t.id === id ? { ...t, status: "done" } : t
-                                        )
-                                    );
-                                }}
-                            />
-                        ))}
-                </div>
-            </div>
+            <TaskColumn
+                title="In process"
+                tasks={inProcess}
+                sort={sortInProcess}
+                setSort={setSortInProcess}
+                markAsDone={markAsDone}
+                markAsUndone={markAsUndone}
+            />
 
-            <div className="flex-1 flex flex-col gap-5">
-                <h2 className="text-lg font-medium tracking-wide">In process</h2>
-
-                <div className="flex flex-col gap-3 h-full overflow-y-scroll scroll-hide">
-                    {TASKS
-                        .filter(task => task.status === "in-process")
-                        .map((task) => (
-                            <TaskCard
-                                key={task.id}
-                                task={task}
-                                onDone={(id) => {
-                                    setTasks(prev =>
-                                        prev.map(t =>
-                                            t.id === id ? { ...t, status: "done" } : t
-                                        )
-                                    );
-                                }}
-                            />
-                        ))}
-                </div>
-            </div>
-
-            <div className="flex-1 flex flex-col gap-5">
-                <h2 className="text-lg font-medium tracking-wide">Done</h2>
-
-                <div className="flex flex-col gap-3 h-full overflow-y-scroll scroll-hide">
-                    {TASKS
-                        .filter(task => task.status === "done")
-                        .map((task) => (
-                            <TaskCard
-                                key={task.id}
-                                task={task}
-                                onDone={(id) => {
-                                    setTasks(prev =>
-                                        prev.map(t =>
-                                            t.id === id ? { ...t, status: "done" } : t
-                                        )
-                                    );
-                                }}
-                            />
-                        ))}
-                </div>
-            </div>
+            <TaskColumn
+                title="Done"
+                tasks={done}
+                sort={sortDone}
+                setSort={setSortDone}
+                markAsDone={markAsDone}
+                markAsUndone={markAsUndone}
+            />
         </div>
     );
 }

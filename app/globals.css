@@ -8,11 +8,6 @@
   --text-shadow-wht: 0 0 10px #fff;
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
