@@ -26,7 +26,7 @@ async def signup(data: UserSignup):
     )
     await user.save()
 
-    return user
+    return {"message": "Signup success"}
 
 
 @router.post("/login")

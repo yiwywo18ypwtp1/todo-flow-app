@@ -12,6 +12,7 @@ async def get_current_user(request: Request):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
     return {
-       "name": f"{user.firstName} {user.lastName}",
+       "firstName": user.firstName,
+       "lastName": user.lastName,
         "email" : user.email
     }
