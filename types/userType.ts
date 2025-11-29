@@ -9,3 +9,9 @@ export type LoginUser = {
     email: string;
     password: string;
 }
+
+export type User = {
+    firstName: string;
+    lastName: string;
+    email: string;
+}

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Exo_2 } from "next/font/google";
-import "./globals.css";
 import SideNavbar from "@/components/SideNavbar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -21,12 +20,11 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
-            <body
-                className={`${exo2.className} bg-blk text-wht`}
-            >
+        <TooltipProvider delayDuration={1}>
+            <div className="flex flex-row w-full h-screen">
+                <SideNavbar />
                 {children}
-            </body>
-        </html>
+            </div>
+        </TooltipProvider>
     );
 }
