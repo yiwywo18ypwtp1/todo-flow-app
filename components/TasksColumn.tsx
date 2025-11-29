@@ -1,3 +1,6 @@
+import Image from "next/image";
+import { Task } from "@/types/taskType";
+import TaskCard from "./TaskCard";
 import {
     Select,
     SelectContent,
@@ -7,9 +10,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import Image from "next/image";
-import { Task } from "@/types/taskType";
-import TaskCard from "./TaskCard";
+import { AnimatePresence } from "motion/react";
 
 type ColumnProps = {
     title: string;
@@ -17,10 +18,11 @@ type ColumnProps = {
     sort: string;
     setSort: (value: string) => void;
     markAsDone: (id: string) => void;
-    markAsUndone: (id: string) => void;
+    markAsOnToday: (id: string) => void;
+    markAsInProcess: (id: string) => void;
 }
 
-const TaskColumn = ({ title, tasks, sort, setSort, markAsDone, markAsUndone }: ColumnProps) => {
+const TaskColumn = ({ title, tasks, sort, setSort, markAsDone, markAsOnToday, markAsInProcess }: ColumnProps) => {
     return (
         <div className="flex-1 flex flex-col gap-5">
             <div className="flex items-center justify-between">
@@ -83,20 +85,23 @@ const TaskColumn = ({ title, tasks, sort, setSort, markAsDone, markAsUndone }: C
             </div>
 
             <div className="flex flex-col gap-3 h-full overflow-y-scroll scroll-hide">
-                {tasks.length > 0 ? (
-                    tasks.map((task) => (
-                        <TaskCard
-                            key={task.id}
-                            task={task}
-                            onDone={markAsDone}
-                            onUndone={markAsUndone}
-                        />
-                    ))
-                ) : (
-                    <div className="border border-dashed border-white/15 rounded-xl text-white/25 text-center w-full h-60 flex items-center justify-center">
-                        There are no tasks in this category
-                    </div>
-                )}
+                <AnimatePresence initial={false}>
+                    {tasks.length > 0 ? (
+                        tasks.map((task) => (
+                            <TaskCard
+                                key={task.id}
+                                task={task}
+                                onDone={markAsDone}
+                                markAsOnToday={markAsOnToday}
+                                markAsInProcess={markAsInProcess}
+                            />
+                        ))
+                    ) : (
+                        <div className="border border-dashed border-white/15 rounded-xl text-white/25 text-center w-full h-60 flex items-center justify-center">
+                            There are no tasks in this category
+                        </div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

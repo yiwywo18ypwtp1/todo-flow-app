@@ -125,7 +125,15 @@ export default function Home() {
         )
     }
 
-    const markAsUndone = (id: string) => {
+    const markAsOnToday = (id: string) => {
+        setTasks(prev =>
+            prev.map(t =>
+                t.id === id ? { ...t, status: "on-today" } : t
+            )
+        )
+    }
+
+    const markAsInProcess = (id: string) => {
         setTasks(prev =>
             prev.map(t =>
                 t.id === id ? { ...t, status: "in-process" } : t
@@ -141,7 +149,8 @@ export default function Home() {
                 sort={sortAll}
                 setSort={setSortAll}
                 markAsDone={markAsDone}
-                markAsUndone={markAsUndone}
+                markAsOnToday={markAsOnToday}
+                markAsInProcess={markAsInProcess}
             />
 
             <Divider vertical />
@@ -152,7 +161,8 @@ export default function Home() {
                 sort={sortToday}
                 setSort={setSortToday}
                 markAsDone={markAsDone}
-                markAsUndone={markAsUndone}
+                markAsOnToday={markAsOnToday}
+                markAsInProcess={markAsInProcess}
             />
 
             <TaskColumn
@@ -161,7 +171,8 @@ export default function Home() {
                 sort={sortInProcess}
                 setSort={setSortInProcess}
                 markAsDone={markAsDone}
-                markAsUndone={markAsUndone}
+                markAsOnToday={markAsOnToday}
+                markAsInProcess={markAsInProcess}
             />
 
             <TaskColumn
@@ -170,7 +181,8 @@ export default function Home() {
                 sort={sortDone}
                 setSort={setSortDone}
                 markAsDone={markAsDone}
-                markAsUndone={markAsUndone}
+                markAsOnToday={markAsOnToday}
+                markAsInProcess={markAsInProcess}
             />
         </div>
     );
