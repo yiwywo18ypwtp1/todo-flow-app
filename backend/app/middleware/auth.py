@@ -30,7 +30,12 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            request.state.user_id = payload.get("user_id")
+            
+            user_id = payload.get("sub")
+            if not user_id:
+                return JSONResponse({"detail": "Invalid token payload"}, status_code=401)
+            
+            request.state.user_id = payload.get("sub")
         except ExpiredSignatureError:
             return JSONResponse({"detail": "Token expired"}, status_code=401)
         except JWTError:

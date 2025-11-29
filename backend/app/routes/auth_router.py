@@ -2,11 +2,20 @@ from fastapi import APIRouter, HTTPException, status
 from app.models.auth import User
 from app.schemas.auth_schema import UserSignup, UserLogin 
 from app.utils.jwt import create_access_token
+from app.utils.security import verify_pass
 
 router = APIRouter()
 
 @router.post("/signup")
 async def signup(data: UserSignup):
+    user_exist = await User.find_one(User.email == data.email)
+    
+    if user_exist:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User with this email already exist"
+        )
+
     hashed = data.hashed_password()
 
     user = User(
@@ -21,14 +30,22 @@ async def signup(data: UserSignup):
 
 
 @router.post("/login")
-async def signup(data: UserLogin):
-    decoded = data.decode_password(data.password)
+async def login(data: UserLogin):
+    user = await User.find_one(User.email == data.email)
 
-    if not decoded:
-        raise HTTPException(status_conde=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+
+    if not verify_pass(data.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
     
-    token = create_access_token(data)
+    access_token = create_access_token({"sub": str(user.id)})
 
-    return {"token": token, "message": "Login success"}
+    return {"token": access_token, "message": "Login success"}
     
-

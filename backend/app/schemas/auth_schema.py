@@ -14,6 +14,3 @@ class UserSignup(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
-
-    def decode_password(self, hashed):
-        return verify_pass(self.password, hashed)
