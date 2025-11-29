@@ -1,3 +1,4 @@
+from beanie import PydanticObjectId
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -35,7 +36,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             if not user_id:
                 return JSONResponse({"detail": "Invalid token payload"}, status_code=401)
             
-            request.state.user_id = payload.get("sub")
+            request.state.user_id = PydanticObjectId(payload.get("sub"))
         except ExpiredSignatureError:
             return JSONResponse({"detail": "Token expired"}, status_code=401)
         except JWTError:

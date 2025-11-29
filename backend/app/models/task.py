@@ -1,4 +1,4 @@
-from beanie import Document
+from beanie import Document, PydanticObjectId
 from pydantic import BaseModel
 from typing import List
 
@@ -24,6 +24,7 @@ class TaskUpdate(BaseModel):
 
 
 class Task(Document):
+    owner_id: PydanticObjectId
     title: str
     description: str
     dueDate: str

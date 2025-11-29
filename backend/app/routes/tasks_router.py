@@ -1,18 +1,27 @@
-from fastapi import APIRouter, HTTPException, status
+from beanie import PydanticObjectId
+from fastapi import APIRouter, Request, HTTPException, status
 from app.models.task import Task, TaskUpdate
+from app.models.auth import User
 from app.schemas.task_schema import TaskCreate
 
 
 router = APIRouter()
 
 @router.get("/")
-async def get_all_tasks():
-    return await Task.find_all().to_list()
+async def get_all_tasks(request: Request):
+    user_id = request.state.user_id
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No user with this ID")
+
+    tasks = await Task.find(Task.owner_id == user_id).to_list()
+
+    return tasks
 
 
 @router.post("/")
-async def create_task(data: TaskCreate):
-    task = Task(**data.dict())
+async def create_task(data: TaskCreate, request: Request):
+    task = Task(**data.dict(), owner_id=request.state.user_id)
+
     try:
         await task.insert()
     except Exception as e:
@@ -22,27 +31,41 @@ async def create_task(data: TaskCreate):
 
 
 @router.get("/search")
-async def search_task(q: str = ""):
-    tasks = await Task.find({"title": {"$regex": q, "$options": "i"}}).to_list(None)
+async def search_task(request: Request, q: str = ""):
+    user_id = request.state.user_id
+
+    tasks = await Task.find(
+        Task.owner_id == user_id,
+        {"title": {"$regex": q, "$options": "i"}}
+    ).to_list(None)
+
     if not tasks:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        return {"message": "Not found"}
 
     return tasks
 
 @router.get("/{task_id}")
-async def get_task(task_id: str):
+async def get_task(task_id: str, request: Request):
     task = await Task.get(task_id)
+
     if not task:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    
+    if task.owner_id != request.state.user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
     
     return task
 
 
 @router.patch("/{task_id}")
-async def update_task(task_id: str, data: TaskUpdate):
+async def update_task(task_id: str, data: TaskUpdate, request: Request):
     task = await Task.get(task_id)
+
     if not task:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    
+    if task.owner_id != request.state.user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
 
     update_data = data.model_dump(exclude_none=True)
     await task.set(update_data)
@@ -51,10 +74,14 @@ async def update_task(task_id: str, data: TaskUpdate):
 
 
 @router.delete("/{task_id}")
-async def delete_task(task_id: str):
+async def delete_task(task_id: str, request: Request):
     task = await Task.get(task_id)
+
     if not task:
-        raise HTTPException(status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    
+    if task.owner_id != request.state.user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
     
     await task.delete()
     return {"message": f"Task {task_id} deleted"}
