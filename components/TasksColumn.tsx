@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Task } from "@/types/taskType";
+import { Task, UpdateTask } from "@/types/taskType";
 import TaskCard from "./TaskCard";
 import {
     Select,
@@ -21,11 +21,14 @@ type ColumnProps = {
     setSort: (value: string) => void;
     markAsDone: (id: string) => void;
     markAsInProcess: (id: string) => void;
+    handleDelete: (id: string) => void;
+    handleUpdate: (taskId: string, fields: UpdateTask) => Promise<void>;
+    toggleSubtask: (taskId: string, subtaskId: string) => void;
 }
 
-const TaskColumn = ({ title, tasks, sort, setSort, markAsDone, markAsInProcess }: ColumnProps) => {
+const TaskColumn = ({ title, tasks, sort, setSort, markAsDone, markAsInProcess, handleDelete, handleUpdate, toggleSubtask }: ColumnProps) => {
     return (
-        <div className="flex-1 flex flex-col gap-5">
+        <div className="flex flex-col gap-6 w-full flex-1">
             <div className="flex items-center justify-between">
                 <h2 className="text-lg font-medium tracking-wide">{title}</h2>
 
@@ -85,7 +88,7 @@ const TaskColumn = ({ title, tasks, sort, setSort, markAsDone, markAsInProcess }
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 h-full overflow-y-scroll scroll-hide">
+            <div className="flex flex-col gap-3 h-200 max-h-200 flex-1 overflow-y-auto scroll-hide">
                 <AnimatePresence initial={false}>
                     {tasks.length > 0 ? (
                         tasks.map((task) => (
@@ -93,6 +96,9 @@ const TaskColumn = ({ title, tasks, sort, setSort, markAsDone, markAsInProcess }
                                 key={task._id}
                                 task={task}
                                 onDone={markAsDone}
+                                handleDelete={handleDelete}
+                                toggleSubtask={toggleSubtask}
+                                handleUpdate={handleUpdate}
                                 markAsInProcess={markAsInProcess}
                             />
                         ))

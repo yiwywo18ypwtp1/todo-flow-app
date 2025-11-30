@@ -8,3 +8,9 @@ export type CreateTag = {
     title: string;
     color: string;
 }
+
+export type BackendTag = {
+    id: string;
+    title: string;
+    color: string;
+};

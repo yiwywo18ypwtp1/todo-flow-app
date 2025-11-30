@@ -31,18 +31,24 @@ async def create_task(data: TaskCreate, request: Request):
 
 
 @router.get("/search")
-async def search_task(request: Request, q: str = ""):
+async def search_task(request: Request, q: str = "", tag: str = ""):
     user_id = request.state.user_id
 
-    tasks = await Task.find(
-        Task.owner_id == user_id,
-        {"title": {"$regex": q, "$options": "i"}}
-    ).to_list(None)
+    query = {"owner_id": user_id}
+
+    if q:
+        query["title"] = {"$regex": q, "$options": "i"}
+
+    if tag:
+        query["tags.title"] = {"$regex": tag, "$options": "i"}
+
+    tasks = await Task.find(query).to_list(None)
 
     if not tasks:
         return {"message": "Not found"}
 
     return tasks
+
 
 @router.get("/{task_id}")
 async def get_task(task_id: str, request: Request):

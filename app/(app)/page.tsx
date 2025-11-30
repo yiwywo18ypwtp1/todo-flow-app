@@ -1,113 +1,35 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Divider from "@/components/Divider";
 import { sortTasks } from "@/utils/sortTask";
-import { Task } from "@/types/taskType";
+import { Task, UpdateTask } from "@/types/taskType";
+import { Tag as TagType } from "@/types/tagType";
 import TaskColumn from "@/components/TasksColumn";
-import { getAllTasks, updateTask } from "@/api/tasks";
+import { deleteTask, getAllTasks, updateTask } from "@/api/tasks";
 import { computeStatus } from "@/utils/computeStatus";
+import { useDebounce } from "@/hooks/useDebounce";
+import { searchTask } from "@/api/tasks";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import Tag from "@/components/Tag";
+import { getAllTags } from "@/api/tags";
 
-// const TASKS: Task[] = [
-// {
-//     id: "t1",
-//     title: "Pay",
-//     description: "Pay salaries to employees",
-//     status: "in-process",
-//     priority: 7,
-//     dueDate: "2026-12-20",
-
-//     tags: [
-//         { id: "tag1", title: "work", color: "#51a2ff" },
-//         { id: "tag2", title: "important", color: "#ff6467" },
-//         { id: "tag3", title: "pay", color: "#ffdf20" },
-//     ],
-
-//     subtasks: [
-//         { id: "s1", title: "calculate taxes", done: false },
-//         { id: "s2", title: "transfer money", done: true },
-//     ],
-// },
-//     {
-//         id: "t2",
-//         title: "Grocery shopping",
-//         description: "Buy all necessary products for the week",
-//         status: "on-today",
-//         priority: 5,
-//         dueDate: "2025-02-28",
-
-//         tags: [
-//             { id: "tag4", title: "home", color: "#38d39f" },
-//             { id: "tag5", title: "food", color: "#ffd166" },
-//         ],
-
-//         subtasks: [
-//             { id: "s3", title: "Buy vegetables", done: false },
-//             { id: "s4", title: "Buy chicken", done: false },
-//             { id: "s5", title: "Get coffee", done: true },
-//         ],
-//     },
-//     {
-//         id: "t3",
-//         title: "Gym workout",
-//         description: "Full body workout + stretching",
-//         status: "on-today",
-//         priority: 2,
-//         dueDate: "2025-02-27",
-
-//         tags: [
-//             { id: "tag6", title: "health", color: "#9b5de5" },
-//             { id: "tag7", title: "sport", color: "#00f5d4" },
-//         ],
-
-//         subtasks: [
-//             { id: "s6", title: "Warm-up", done: true },
-//             { id: "s7", title: "Strength exercises", done: false },
-//             { id: "s8", title: "Stretching", done: false },
-//         ],
-//     },
-//     {
-//         id: "t4",
-//         title: "Finish project",
-//         description: "Complete the remaining features and push to GitHub",
-//         status: "done",
-//         priority: 10,
-//         dueDate: "2025-03-02",
-
-//         tags: [
-//             { id: "tag8", title: "coding", color: "#6ef2f0" },
-//             { id: "tag9", title: "important", color: "#ff6467" },
-//         ],
-
-//         subtasks: [
-//             { id: "s9", title: "Fix UI bugs", done: false },
-//             { id: "s10", title: "Add modal windows", done: true },
-//             { id: "s11", title: "Write documentation", done: false },
-//         ],
-//     },
-//     {
-//         id: "t5",
-//         title: "Clean the apartment",
-//         description: "Clean up the rooms, kitchen, and bathroom",
-//         status: "done",
-//         priority: 6,
-//         dueDate: "2025-02-25",
-
-//         tags: [
-//             { id: "tag10", title: "home", color: "#38d39f" },
-//             { id: "tag11", title: "cleaning", color: "#a0c4ff" },
-//         ],
-
-//         subtasks: [
-//             { id: "s12", title: "Vacuum floor", done: true },
-//             { id: "s13", title: "Wash dishes", done: true },
-//             { id: "s14", title: "Bathroom cleaning", done: true },
-//         ],
-//     }
-// ]
 
 export default function Home() {
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [tags, setTags] = useState<TagType[]>([]);
+
+
+    const [search, setSearch] = useState("");
+    const [selectedTag, setSelectedTag] = useState("");
+    const debouncedSearch = useDebounce(search, 300);
 
     const [sortAll, setSortAll] = useState<string>("none");
     const [sortToday, setSortToday] = useState<string>("none");
@@ -134,7 +56,59 @@ export default function Home() {
         fetchTasks();
     }, []);
 
+    useEffect(() => {
+        const fetchTags = async () => {
+            const response = await getAllTags();
+
+            setTags([...response.data.userTags, ...response.data.baseTags]);
+        };
+
+        fetchTags();
+    }, []);
+
+    useEffect(() => {
+        const fetchTasks = async () => {
+            const response = await getAllTasks();
+            const tasksWithStatus = response.data.map((t: Task) => ({
+                ...t,
+                status: computeStatus(t),
+            }));
+            setTasks(tasksWithStatus);
+        };
+
+        const search = async () => {
+            const q = debouncedSearch.trim() || undefined;
+            const tag = selectedTag.trim() || undefined;
+
+            if (!q && !tag) {
+                await fetchTasks();
+                return;
+            }
+
+            try {
+                const res = await searchTask({ q, tag });
+
+                if (res.data.message === "Not found") {
+                    setTasks([]);
+                } else {
+                    const tasksWithStatus = res.data.map((t: Task) => ({
+                        ...t,
+                        status: computeStatus(t),
+                    }));
+                    setTasks(tasksWithStatus);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        search();
+    }, [debouncedSearch, selectedTag]);
+
+
     const markAsDone = async (id: string) => {
+        await updateTask(id, { isDone: true });
+
         setTasks(prev =>
             prev.map(task =>
                 task._id === id
@@ -145,6 +119,8 @@ export default function Home() {
     };
 
     const markAsInProcess = async (id: string) => {
+        await updateTask(id, { isDone: false });
+
         setTasks(prev =>
             prev.map(task =>
                 task._id === id
@@ -154,45 +130,169 @@ export default function Home() {
         );
     };
 
+
+    const hadleDelete = async (id: string) => {
+        try {
+            await deleteTask(id);
+
+            setTasks(prev => prev.filter(task => task._id !== id));
+        } catch (error) {
+            console.error("Delete error:", error);
+        }
+    };
+
+
+    const toggleSubtask = async (taskId: string, subtaskId: string) => {
+        setTasks(prev =>
+            prev.map(task =>
+                task._id === taskId
+                    ? {
+                        ...task,
+                        subtasks: task.subtasks.map(st =>
+                            st.id === subtaskId
+                                ? { ...st, done: !st.done }
+                                : st
+                        )
+                    }
+                    : task
+            )
+        );
+
+        try {
+            const task = tasks.find(t => t._id === taskId);
+            if (!task) return;
+
+            const updated = task.subtasks.map(st =>
+                st.id === subtaskId ? { ...st, done: !st.done } : st
+            );
+
+            await updateTask(taskId, {
+                subtasks: updated,
+            });
+        } catch (err) {
+            console.error("Failed to update subtask:", err);
+        }
+    };
+
+
+    const updateTaskFields = async (id: string, fields: UpdateTask): Promise<void> => {
+        try {
+            await updateTask(id, fields);
+
+            setTasks(prev =>
+                prev.map(t =>
+                    t._id === id ? { ...t, ...fields } : t
+                )
+            );
+        } catch (err) {
+            console.error("Failed to update task:", err);
+        }
+    };
+
     return (
-        <div className="flex gap-6 p-6 w-full">
-            <TaskColumn
-                title="All"
-                tasks={all}
-                sort={sortAll}
-                setSort={setSortAll}
-                markAsDone={markAsDone}
-                markAsInProcess={markAsInProcess}
-            />
+        <div className="w-full h-full flex flex-col p-6 gap-4 overflow-hidden">
+            <div className="relative w-full flex">
+                <Image
+                    src="/svg/lens.svg"
+                    width={20}
+                    height={20}
+                    alt="search"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50 drop-shadow-wht"
+                />
 
-            <Divider vertical />
+                <div className="flex items-center w-full gap-3">
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search tasks by name..."
+                        className="input flex-1 pl-10! rounded-full!"
+                    />
 
-            <TaskColumn
-                title="On today"
-                tasks={today}
-                sort={sortToday}
-                setSort={setSortToday}
-                markAsDone={markAsDone}
-                markAsInProcess={markAsInProcess}
-            />
+                    <p className="opacity-50 italic">or</p>
 
-            <TaskColumn
-                title="Future"
-                tasks={inProcess}
-                sort={sortInProcess}
-                setSort={setSortInProcess}
-                markAsDone={markAsDone}
-                markAsInProcess={markAsInProcess}
-            />
+                    <Select value={selectedTag} onValueChange={setSelectedTag}>
+                        <SelectTrigger className="border-white/15 input w-fit! rounded-full! pl-3!">
+                            <SelectValue placeholder="Search by tag" />
+                        </SelectTrigger>
 
-            <TaskColumn
-                title="Done"
-                tasks={done}
-                sort={sortDone}
-                setSort={setSortDone}
-                markAsDone={markAsDone}
-                markAsInProcess={markAsInProcess}
-            />
-        </div>
+                        <SelectContent className="bg-neutral-900 border-white/15">
+                            {tags.map(t => (
+                                <SelectItem
+                                    key={t._id}
+                                    value={t.title}
+                                >
+                                    <Tag
+                                        title={t.title}
+                                        color={t.color}
+                                    />
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+
+                    <button
+                        onClick={() => {
+                            setSearch("");
+                            setSelectedTag("");
+                        }}
+                        className="opacity-50 text-lg"
+                    >╳
+                    </button>
+                </div>
+            </div>
+
+            <div className="flex gap-6 w-full h-full">
+                <TaskColumn
+                    title="All"
+                    tasks={all}
+                    sort={sortAll}
+                    setSort={setSortAll}
+                    markAsDone={markAsDone}
+                    handleDelete={hadleDelete}
+                    handleUpdate={updateTaskFields}
+                    toggleSubtask={toggleSubtask}
+                    markAsInProcess={markAsInProcess}
+                />
+
+                <Divider vertical />
+
+                <TaskColumn
+                    title="On today"
+                    tasks={today}
+                    sort={sortToday}
+                    setSort={setSortToday}
+                    markAsDone={markAsDone}
+                    handleDelete={hadleDelete}
+                    handleUpdate={updateTaskFields}
+                    toggleSubtask={toggleSubtask}
+                    markAsInProcess={markAsInProcess}
+                />
+
+                <TaskColumn
+                    title="Future & Overdue"
+                    tasks={inProcess}
+                    sort={sortInProcess}
+                    markAsDone={markAsDone}
+                    handleDelete={hadleDelete}
+                    handleUpdate={updateTaskFields}
+                    setSort={setSortInProcess}
+                    toggleSubtask={toggleSubtask}
+                    markAsInProcess={markAsInProcess}
+                />
+
+                <TaskColumn
+                    title="Done"
+                    tasks={done}
+                    sort={sortDone}
+                    setSort={setSortDone}
+                    markAsDone={markAsDone}
+                    handleDelete={hadleDelete}
+                    handleUpdate={updateTaskFields}
+                    toggleSubtask={toggleSubtask}
+                    markAsInProcess={markAsInProcess}
+                />
+            </div>
+        </div >
     );
 }

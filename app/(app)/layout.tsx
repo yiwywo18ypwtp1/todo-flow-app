@@ -21,7 +21,7 @@ export default function RootLayout({
 }>) {
     return (
         <TooltipProvider delayDuration={1}>
-            <div className="flex flex-row w-full h-screen">
+            <div className="flex flex-row w-full max-h-screen h-screen">
                 <SideNavbar />
                 {children}
             </div>

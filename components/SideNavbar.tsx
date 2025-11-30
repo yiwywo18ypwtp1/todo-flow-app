@@ -21,14 +21,6 @@ const SECTIONS = [
             { icon: "tag", name: "My Tags", slug: "tags" },
         ]
     },
-    {
-        title: "FILTER",
-        items: [
-            { icon: "today", name: "On today", slug: "today" },
-            { icon: "clock", name: "In progress", slug: "undone" },
-            { icon: "done", name: "Done", slug: "Done" },
-        ]
-    },
 ];
 
 const SideNavbar = () => {
@@ -44,11 +36,11 @@ const SideNavbar = () => {
             const token = localStorage.getItem("token");
             if (!token) return;
 
-            const respose = await me(token);
-            console.log(respose.data)
+            const response = await me(token);
+            console.log(response.data)
 
-            if (!respose) return;
-            setUser(respose.data);
+            if (!response) return;
+            setUser(response.data);
         }
 
         fetchUser();
@@ -79,10 +71,7 @@ const SideNavbar = () => {
                     />
                 </div>
 
-                <h1
-                    className={`text-lg text-center whitespace-no wrap transition-all duration-300${expand ? "opacity-100 ml-2 w-full" : "opacity-0 w-0 ml-0 overflow-hidden"}
-                    `}
-                >
+                <h1 className={`text-lg text-center whitespace-no wrap transition-all duration-300${expand ? "opacity-100 ml-2 w-full" : "opacity-0 w-0 ml-0 overflow-hidden"}`}>
                     Overview
                 </h1>
             </div>

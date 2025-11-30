@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Task } from "@/types/taskType";
+import { Task, UpdateTask } from "@/types/taskType";
 import Image from "next/image";
 import { formatDate } from "@/lib/date";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,21 +14,18 @@ import {
     DialogTitle,
     DialogDescription
 } from "@/components/ui/dialog";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-    DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 import Tag from "./Tag";
 import MyTooltip from "./MyTooltip";
 import { motion } from "motion/react"
-
+import EditTaskForm from "./EditTaskForm";
 
 interface TaskCardProps {
     task: Task;
     onDone: (id: string) => void;
     markAsInProcess: (id: string) => void;
+    handleDelete: (id: string) => void;
+    handleUpdate: (taskId: string, fields: UpdateTask) => Promise<void>;
+    toggleSubtask: (taskId: string, subtaskId: string) => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -44,7 +41,7 @@ const getPriorityColor = (p: number) => {
     if (p >= 1) return "#aadf65";
 };
 
-export default function TaskCard({ task, onDone, markAsInProcess }: TaskCardProps) {
+const TaskCard = ({ task, onDone, markAsInProcess, handleDelete, handleUpdate, toggleSubtask }: TaskCardProps) => {
     const [checked, setChecked] = useState<boolean>(false);
     const [openDesc, setOpenDesc] = useState<boolean>(false);
     const [showControlBtns, setControlBtns] = useState<boolean>(false);
@@ -130,34 +127,30 @@ export default function TaskCard({ task, onDone, markAsInProcess }: TaskCardProp
                     </>
                 ) : (
                     <div className={`flex items-center gap-2 ${showControlBtns ? "opacity-100 saturate-100" : "opacity-50 saturate-50"} transition-all duration-300`}>
-                        < Dialog >
+                        <Dialog>
                             <DialogTrigger asChild>
-                                <Button variant="outline" className="h-8 px-2 bg-pink-300/10 border-pink-300 hover:bg-pink-300/20">
-                                    <Image src="/svg/edit.svg" alt="Edit" width={20} height={20} />
+                                <Button className="h-8 px-2 bg-pink-300/10 border border-pink-300 hover:bg-pink-300/20">
+                                    <Image src="/svg/edit.svg" width={20} height={20} alt="edit" />
                                 </Button>
                             </DialogTrigger>
 
                             <DialogContent className="bg-[#111] border border-white/10 text-white">
                                 <DialogHeader>
                                     <DialogTitle>Edit task</DialogTitle>
-                                    <DialogDescription>Change the title or description.</DialogDescription>
+                                    <DialogDescription>
+                                        Change the title or description.
+                                    </DialogDescription>
                                 </DialogHeader>
 
-                                <div className="flex flex-col gap-3 mt-3">
-                                    <input
-                                        defaultValue={task.title}
-                                        className="px-2 py-1 bg-black/40 rounded border border-white/20"
-                                    />
-                                    <textarea
-                                        defaultValue={task.description}
-                                        className="px-2 py-1 bg-black/40 rounded border border-white/20"
-                                    />
-                                    <Button className="bg-pink-300/20 border border-pink-300 hover:bg-pink-300/30">Save</Button>
-                                </div>
+                                <EditTaskForm task={task} handleUpdate={handleUpdate} />
                             </DialogContent>
                         </Dialog>
 
-                        <Button variant="outline" className="h-8 px-2 bg-red-300/10 border-red-300 hover:bg-red-300/20">
+                        <Button
+                            onClick={() => handleDelete(task._id)}
+                            variant="outline"
+                            className="h-8 px-2 bg-red-300/10 border-red-300 hover:bg-red-300/20"
+                        >
                             <Image src="/svg/trash.svg" alt="Delete" width={20} height={20} />
                         </Button>
                     </div>
@@ -166,9 +159,9 @@ export default function TaskCard({ task, onDone, markAsInProcess }: TaskCardProp
 
             {task.tags.length > 0 && (
                 <div className="flex gap-2 flex-wrap">
-                    {task.tags.map(tag => (
+                    {task.tags.map((tag, i: number) => (
                         <Tag
-                            key={tag.id}
+                            key={i}
                             title={tag.title}
                             color={tag.color}
                         />
@@ -191,28 +184,31 @@ export default function TaskCard({ task, onDone, markAsInProcess }: TaskCardProp
 
             {task.subtasks.length > 0 && (
                 <div className="flex flex-col gap-2 mt-2">
-                    {task.subtasks.map((sub) => {
-                        const [done, setDone] = useState(sub.done);
+                    {task.subtasks.map((sub) => (
+                        <label
+                            key={sub.id}
+                            className="flex items-center gap-3 cursor-pointer"
+                        >
+                            <Checkbox
+                                checked={sub.done}
+                                onCheckedChange={() =>
+                                    toggleSubtask(task._id, sub.id)
+                                }
+                                className="border-white/15 data-[state=checked]:bg-pink-300/10 data-[state=checked]:border-pink-300 h-4.5 w-4.5"
+                            />
 
-                        return (
-                            <label
-                                key={sub.id}
-                                className="flex items-center gap-3 cursor-pointer"
+                            <span
+                                className={`transition-all ${sub.done ? "line-through opacity-50" : ""
+                                    }`}
                             >
-                                <Checkbox
-                                    checked={done}
-                                    onCheckedChange={(v) => setDone(!!v)}
-                                    className="border-white/15 data-[state=checked]:bg-pink-300/10 data-[state=checked]:border-pink-300 h-4.5 w-4.5"
-                                />
-
-                                <span className={`transition-all ${done ? "line-through opacity-50" : ""}`}>
-                                    {sub.title}
-                                </span>
-                            </label>
-                        );
-                    })}
+                                {sub.title}
+                            </span>
+                        </label>
+                    ))}
                 </div>
             )}
         </motion.div>
     );
 }
+
+export default TaskCard;

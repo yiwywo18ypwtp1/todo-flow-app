@@ -21,6 +21,8 @@ class TaskUpdate(BaseModel):
     status: str | None = None
     priority: int | None = None
     dueDate: str | None = None
+    subtasks: List[Subtask] | None = None
+    isDone: bool | None = None
 
 
 class Task(Document):
