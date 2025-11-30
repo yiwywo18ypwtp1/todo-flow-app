@@ -11,12 +11,25 @@ export interface Tag {
 }
 
 export interface Task {
-    id: string;
+    _id: string;
     title: string;
     description: string;
     dueDate: string;
     tags: Tag[];
     subtasks: Subtask[];
-    status: 'done' | 'on-today' | 'in-process';
+    status: "today" | "future" | "done";
     priority: number;
+
+    isDone: boolean;
+}
+
+export interface UpdateTask {
+    title?: string;
+    description?: string;
+    dueDate?: string;
+    tags?: Tag[];
+    subtasks?: Subtask[];
+    priority?: number;
+
+    isDone: boolean;
 }

@@ -7,3 +7,11 @@ class Tag(Document):
 
     class Settings:
         name = "tags"
+
+
+class BaseTag(Document):
+    title: str
+    color: str
+
+    class Settings:
+        name = "base_tags"

@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { Task } from '@/types/taskType';
+import { Task, UpdateTask } from '@/types/taskType';
 
 export async function getAllTasks() {
     return api.get("/tasks");
@@ -13,6 +13,6 @@ export async function deleteTask(id: string) {
     return api.delete(`/tasks/${id}`);
 }
 
-export async function updateTask(id: string, data: any) {
-    return api.put(`/tasks/${id}`, data);
+export async function updateTask(id: string, data: UpdateTask) {
+    return api.patch(`/tasks/${id}`, data);
 }

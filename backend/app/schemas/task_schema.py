@@ -7,6 +7,6 @@ class TaskCreate(BaseModel):
     description: str
     dueDate: str
     priority: int
-    status: str
+    isDone: bool = False
     tags: List[Tag]
     subtasks: List[Subtask]

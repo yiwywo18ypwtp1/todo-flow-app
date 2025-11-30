@@ -125,5 +125,5 @@ export default function AuthPage() {
                 </h1>
             )}
         </main >
-    )
+    );
 }

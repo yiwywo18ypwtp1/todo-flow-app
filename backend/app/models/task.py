@@ -16,11 +16,11 @@ class Subtask(BaseModel):
 
 
 class TaskUpdate(BaseModel):
-    title: str | None
-    description: str | None
-    status: str | None
-    priority: int | None
-    dueDate: str | None
+    title: str | None = None
+    description: str | None = None
+    status: str | None = None
+    priority: int | None = None
+    dueDate: str | None = None
 
 
 class Task(Document):
@@ -29,7 +29,7 @@ class Task(Document):
     description: str
     dueDate: str
     priority: int
-    status: str
+    isDone: bool = False
     tags: List[Tag]
     subtasks: List[Subtask]
 

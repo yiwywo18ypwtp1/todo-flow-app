@@ -1,4 +1,10 @@
+export type Tag = {
+    _id: string;
+    title: string;
+    color: string;
+}
+
 export type CreateTag = {
-    name: string;
+    title: string;
     color: string;
 }

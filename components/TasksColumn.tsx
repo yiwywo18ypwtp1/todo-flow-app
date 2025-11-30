@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { Task } from "@/types/taskType";
 import TaskCard from "./TaskCard";
@@ -18,11 +20,10 @@ type ColumnProps = {
     sort: string;
     setSort: (value: string) => void;
     markAsDone: (id: string) => void;
-    markAsOnToday: (id: string) => void;
     markAsInProcess: (id: string) => void;
 }
 
-const TaskColumn = ({ title, tasks, sort, setSort, markAsDone, markAsOnToday, markAsInProcess }: ColumnProps) => {
+const TaskColumn = ({ title, tasks, sort, setSort, markAsDone, markAsInProcess }: ColumnProps) => {
     return (
         <div className="flex-1 flex flex-col gap-5">
             <div className="flex items-center justify-between">
@@ -89,10 +90,9 @@ const TaskColumn = ({ title, tasks, sort, setSort, markAsDone, markAsOnToday, ma
                     {tasks.length > 0 ? (
                         tasks.map((task) => (
                             <TaskCard
-                                key={task.id}
+                                key={task._id}
                                 task={task}
                                 onDone={markAsDone}
-                                markAsOnToday={markAsOnToday}
                                 markAsInProcess={markAsInProcess}
                             />
                         ))

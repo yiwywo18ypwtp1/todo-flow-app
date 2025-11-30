@@ -28,13 +28,12 @@ import { motion } from "motion/react"
 interface TaskCardProps {
     task: Task;
     onDone: (id: string) => void;
-    markAsOnToday: (id: string) => void;
     markAsInProcess: (id: string) => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
-    "in-process": "#7c86ff",
-    "on-today": "#1fd1f1",
+    "future": "#7c86ff",
+    "today": "#1fd1f1",
     "done": "#00f78d",
 };
 
@@ -45,7 +44,7 @@ const getPriorityColor = (p: number) => {
     if (p >= 1) return "#aadf65";
 };
 
-export default function TaskCard({ task, onDone, markAsOnToday, markAsInProcess }: TaskCardProps) {
+export default function TaskCard({ task, onDone, markAsInProcess }: TaskCardProps) {
     const [checked, setChecked] = useState<boolean>(false);
     const [openDesc, setOpenDesc] = useState<boolean>(false);
     const [showControlBtns, setControlBtns] = useState<boolean>(false);
@@ -57,7 +56,7 @@ export default function TaskCard({ task, onDone, markAsOnToday, markAsInProcess 
 
     return (
         <motion.div
-            key={task.id}
+            key={task._id}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -107,46 +106,21 @@ export default function TaskCard({ task, onDone, markAsOnToday, markAsInProcess 
                 {checked ? (
                     <>
                         {done ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild className="h-8 border bg-red-300/10 border-red-300 hover:bg-red-300/20">
-                                    <Button>
-                                        Mark as...
-                                    </Button>
-                                </DropdownMenuTrigger>
+                            <Button
+                                onClick={() => markAsInProcess(task._id)}
+                                variant="outline"
+                                style={{
+                                    backgroundColor: "#7c86ff30",
+                                    borderColor: "#7c86ff",
+                                }}
+                                className="h-8 px-2 cursor-pointer"
+                            >
+                                Mark as Undone
+                            </Button>
 
-                                <DropdownMenuContent className="bg-neutral-900 border-white/15 flex flex-col gap-2">
-                                    <DropdownMenuItem asChild>
-                                        <Button
-                                            onClick={() => markAsOnToday(task.id)}
-                                            variant="outline"
-                                            style={{
-                                                backgroundColor: "#1fd1f130",
-                                                borderColor: "#1fd1f1",
-                                            }}
-                                            className="h-8 px-2 w-full cursor-pointer"
-                                        >
-                                            On today
-                                        </Button>
-                                    </DropdownMenuItem>
-
-                                    <DropdownMenuItem asChild>
-                                        <Button
-                                            onClick={() => markAsInProcess(task.id)}
-                                            variant="outline"
-                                            style={{
-                                                backgroundColor: "#7c86ff30",
-                                                borderColor: "#7c86ff",
-                                            }}
-                                            className="h-8 px-2 w-full cursor-pointer"
-                                        >
-                                            In process
-                                        </Button>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
                         ) : (
                             <Button
-                                onClick={() => onDone(task.id)}
+                                onClick={() => onDone(task._id)}
                                 variant="outline"
                                 className="h-8 px-2 bg-green-300/10 border-green-300 hover:bg-green-300/20"
                             >
