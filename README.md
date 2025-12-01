@@ -78,6 +78,12 @@ Built with **Next.js + TypeScript + Tailwind** and powered by a **FastAPI + Bean
 * JWT authentication
 * Pydantic models
 
+
+## 💎 Deploy
+
+### 🟢 Frontend - _Vercel.com_ 
+### 💻 Backend - _Render.com_ 
+
 ## 📂 Project Structure (Frontend)
 
 ```
@@ -87,12 +93,15 @@ Built with **Next.js + TypeScript + Tailwind** and powered by a **FastAPI + Bean
 │    ├── tags/           # Tags list & tag creation
 │    └── page.tsx        # Home page with task columns
 ├── components/
-│    ├── TaskCard/
-│    ├── EditTaskForm/
-│    ├── Tag/
-│    ├── SideNavbar/
+│    ├── TaskCard.tsx
+│    ├── EditTaskForm.tsx
+│    ├── Tag.tsx
+│    ├── SideNavbar.tsx
+│    ├── ...
 │    ├── ui/             # shadcn/ui components
 ├── api/
+│    ├── auth.ts
+│    ├── tags.ts
 │    ├── tasks.ts
 │    └── tags.ts
 ├── lib/
@@ -101,6 +110,7 @@ Built with **Next.js + TypeScript + Tailwind** and powered by a **FastAPI + Bean
 │    └── api.ts          # Axios instance
 └── types/
     ├── taskType.ts
+    ├── userType.ts
     └── tagType.ts
 ```
 
@@ -140,7 +150,7 @@ Frontend will be available at:
 
 ## 🗄 Backend Setup
 
-### 1️⃣ Install Python dependencies
+### 1️⃣ Install Python dependencies using Poetry
 
 ```bash
 poetry install
@@ -205,5 +215,5 @@ POST   /auth/signin
 **Alexander Ivanitskiy**
 
 Frontend / Full-stack Developer
-🔥 Passionate about clean UI, animations, and high-quality code architecture.
-
+🔥 Passionate about clean UI, glows & animations, and high-quality code architecture.
+Made with pleasure for Automaze.io as an test assignment 😊
