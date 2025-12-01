@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select"
 import Tag from "@/components/Tag";
 import { getAllTags } from "@/api/tags";
+import { TestApiUrl } from "@/components/TestApiUrl";
 
 
 export default function Home() {
@@ -191,6 +192,8 @@ export default function Home() {
 
     return (
         <div className="w-full h-full flex flex-col p-6 gap-4 overflow-hidden">
+            <TestApiUrl />
+
             <div className="relative w-full flex">
                 <Image
                     src="/svg/lens.svg"

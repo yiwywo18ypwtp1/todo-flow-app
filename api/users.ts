@@ -7,3 +7,5 @@ export function me(token: string) {
         }
     });
 }
+
+api.defaults.headers.common["Cache-Control"] = "no-store";
